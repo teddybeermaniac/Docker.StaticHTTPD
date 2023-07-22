@@ -1,0 +1,15 @@
+name: 'Build'
+run-name: 'Build'
+permissions:
+  contents: read
+  packages: write
+
+on:
+  push:
+    tags:
+      - '*'
+
+jobs:
+  build:
+    name: 'Build'
+    uses: teddybeermaniac/GitHub.Workflows/.github/workflows/docker-build-image.yml@master
