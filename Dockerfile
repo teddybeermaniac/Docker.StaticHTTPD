@@ -3,7 +3,8 @@ FROM alpine:3.18.2 AS base
 RUN apk add --no-cache \
     build-base \
     busybox-static \
-    oniguruma-dev
+    oniguruma-dev \
+    tini-static
 
 FROM base as busybox
 
@@ -40,6 +41,7 @@ RUN make DESTDIR=/install install
 FROM scratch
 
 WORKDIR /
+COPY --from=base /sbin/tini-static sbin/tini
 COPY --from=busybox /install/bin bin
 COPY --from=busybox /install/sbin sbin
 COPY --from=jq /install/bin bin
@@ -55,4 +57,4 @@ RUN /busybox.static rm busybox.static
 WORKDIR /app
 EXPOSE 80
 
-CMD [ "httpd", "-f", "-u", "nobody:nobody", "-vv" ]
+CMD [ "tini", "-g", "-s", "-v", "-w", "--", "httpd", "-f", "-u", "nobody:nobody", "-vv" ]
