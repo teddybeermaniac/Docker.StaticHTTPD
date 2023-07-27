@@ -57,4 +57,4 @@ RUN /busybox.static rm busybox.static
 WORKDIR /app
 EXPOSE 80
 
-CMD [ "tini", "-g", "-s", "-v", "-w", "--", "httpd", "-f", "-u", "nobody:nobody", "-vv" ]
+CMD [ "tini", "-g", "-s", "-v", "--", "httpd", "-f", "-u", "nobody:nobody", "-vv" ]
