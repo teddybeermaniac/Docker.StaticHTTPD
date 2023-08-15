@@ -1,4 +1,4 @@
-FROM alpine:3.18.2 AS base
+FROM alpine:3.18.3 AS base
 
 RUN apk add --no-cache \
     build-base \
@@ -20,7 +20,7 @@ RUN make install
 
 FROM base as jq
 
-ARG JQ_VERSION=1.6
+ARG JQ_VERSION=1.7rc1
 
 WORKDIR /build
 RUN wget "https://github.com/jqlang/jq/releases/download/jq-${JQ_VERSION}/jq-${JQ_VERSION}.tar.gz"
@@ -28,13 +28,12 @@ RUN tar -xf "jq-${JQ_VERSION}.tar.gz"
 
 WORKDIR "/build/jq-${JQ_VERSION}"
 RUN ./configure \
-    --disable-docs \
     --disable-dependency-tracking \
-    --disable-maintainer-mode \
+    --disable-docs \
     --disable-shared \
     --disable-valgrind \
-    --enable-static \
     --enable-all-static \
+    --enable-static \
     --prefix /
 RUN make DESTDIR=/install install
 
