@@ -1,4 +1,4 @@
-FROM alpine:3.18.3 AS base
+FROM alpine:3.18.4 AS base
 
 RUN apk add --no-cache \
     build-base \
@@ -20,7 +20,7 @@ RUN make install
 
 FROM base as jq
 
-ARG JQ_VERSION=1.7rc1
+ARG JQ_VERSION=1.7
 
 WORKDIR /build
 RUN wget "https://github.com/jqlang/jq/releases/download/jq-${JQ_VERSION}/jq-${JQ_VERSION}.tar.gz"
