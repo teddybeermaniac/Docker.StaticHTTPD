@@ -1,5 +1,5 @@
 # Docker.StaticHTTPD
-A tiny Docker image for serving static content, or simple CGI scripts using BusyBox's HTTPD, ash, and jq.
+A tiny Docker image for serving static content, or simple CGI scripts using BusyBox's HTTPD, ash, curl, and jq.
 
 ## Usage
 Add static files to the `/app` directory, and/or CGI scripts to the `/app/cgi-bin` directory.\
@@ -17,6 +17,7 @@ docker run -d -p 8080:80 -v ./index.html:/app/index.html:ro ghcr.io/teddybeerman
 * basename
 * busybox
 * cat
+* [curl]
 * cut
 * date
 * dirname
@@ -45,4 +46,5 @@ docker run -d -p 8080:80 -v ./index.html:/app/index.html:ro ghcr.io/teddybeerman
 * xargs
 * yes
 
-[jq]: https://jqlang.github.io/jq/
+[curl]: https://github.com/curl/curl
+[jq]: https://jqlang.github.io/jq
