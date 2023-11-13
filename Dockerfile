@@ -2,21 +2,22 @@ FROM alpine:3.18.4 AS base
 
 RUN apk add --no-cache \
     build-base \
-    busybox-static \
-    tini-static
+    busybox-static
 
 FROM base AS busybox
 
 ARG BUSYBOX_VERSION=1.36.1
 
 WORKDIR /build
-RUN wget "https://busybox.net/downloads/busybox-${BUSYBOX_VERSION}.tar.bz2"
-RUN tar -xf "busybox-${BUSYBOX_VERSION}.tar.bz2"
+#RUN wget -O "/build/busybox-${BUSYBOX_VERSION}.tar.bz2" "https://busybox.net/downloads/busybox-${BUSYBOX_VERSION}.tar.bz2" && \
+RUN wget -O "/build/busybox-${BUSYBOX_VERSION}.tar.bz2" "https://web.archive.org/web/9999if_/https://busybox.net/downloads/busybox-${BUSYBOX_VERSION}.tar.bz2" && \
+    tar -xf "/build/busybox-${BUSYBOX_VERSION}.tar.bz2"
 
 WORKDIR "/build/busybox-${BUSYBOX_VERSION}"
-COPY .config .
-RUN make -j "$(nproc --all)"
-RUN make install
+COPY .config "/build/busybox-${BUSYBOX_VERSION}/.config"
+RUN make -j "$(nproc --all)" && \
+    make install && \
+    strip /install/bin/busybox
 
 FROM base AS curl
 
@@ -36,12 +37,12 @@ RUN apk add --no-cache \
 
 ARG CURL_VERSION=8.4.0
 
-WORKDIR /build
-RUN wget "https://github.com/curl/curl/releases/download/curl-${CURL_VERSION//./_}/curl-${CURL_VERSION}.tar.gz"
-RUN tar -xf "curl-${CURL_VERSION}.tar.gz"
+WORKDIR /
+RUN wget -O "/curl-${CURL_VERSION}.tar.gz" "https://github.com/curl/curl/releases/download/curl-${CURL_VERSION//./_}/curl-${CURL_VERSION}.tar.gz" && \
+    tar -xf "/curl-${CURL_VERSION}.tar.gz"
 
-WORKDIR "/build/curl-${CURL_VERSION}"
-RUN LDFLAGS="-static" PKG_CONFIG="pkg-config --static" ./configure \
+WORKDIR /build
+RUN LDFLAGS="-static" PKG_CONFIG="pkg-config --static" "/curl-${CURL_VERSION}/configure" \
     --disable-aws \
     --disable-curldebug \
     --disable-debug \
@@ -73,9 +74,9 @@ RUN LDFLAGS="-static" PKG_CONFIG="pkg-config --static" ./configure \
     --with-nghttp3 \
     --with-zlib \
     --with-zstd \
-    --prefix /
-RUN make -j "$(nproc --all)" DESTDIR=/install LDFLAGS="-static -all-static" install
-RUN strip /install/bin/curl
+    --prefix / && \
+    make -j "$(nproc --all)" DESTDIR=/install LDFLAGS="-static -all-static" install && \
+    strip /install/bin/curl
 
 FROM base AS jq
 
@@ -84,41 +85,31 @@ RUN apk add --no-cache \
 
 ARG JQ_VERSION=1.7
 
-WORKDIR /build
-RUN wget "https://github.com/jqlang/jq/releases/download/jq-${JQ_VERSION}/jq-${JQ_VERSION}.tar.gz"
-RUN tar -xf "jq-${JQ_VERSION}.tar.gz"
+WORKDIR /
+RUN wget -O "/jq-${JQ_VERSION}.tar.gz" "https://github.com/jqlang/jq/releases/download/jq-${JQ_VERSION}/jq-${JQ_VERSION}.tar.gz" && \
+    tar -xf "/jq-${JQ_VERSION}.tar.gz"
 
-WORKDIR "/build/jq-${JQ_VERSION}"
-RUN ./configure \
+WORKDIR /build
+RUN "/jq-${JQ_VERSION}/configure" \
     --disable-dependency-tracking \
     --disable-docs \
     --disable-shared \
     --disable-valgrind \
     --enable-all-static \
     --enable-static \
-    --prefix /
-RUN make -j "$(nproc --all)" DESTDIR=/install install
-RUN strip /install/bin/jq
+    --prefix / && \
+    make -j "$(nproc --all)" DESTDIR=/install install && \
+    strip /install/bin/jq
 
-FROM scratch
+FROM ghcr.io/teddybeermaniac/docker.scratchbase:v0.1.0
 
-WORKDIR /
-COPY --from=base /sbin/tini-static sbin/tini
-COPY --from=base /etc/ssl/certs etc/ssl/certs
-COPY --from=busybox /install/bin bin
-COPY --from=busybox /install/sbin sbin
-COPY --from=curl /install/bin bin
-COPY --from=jq /install/bin bin
+COPY --from=busybox /install/bin /bin
+COPY --from=busybox /install/sbin /sbin
+COPY --from=curl /install/bin/curl /bin/curl
+COPY --from=jq /install/bin/jq /bin/jq
 
-COPY --from=base /bin/busybox.static .
-RUN /busybox.static touch etc/group etc/passwd
-RUN /busybox.static addgroup -g 65534 nobody
-RUN /busybox.static adduser -D -G nobody -H -g "" -h / -s /bin/false -u 65534 nobody
-RUN /busybox.static mkdir -p app/cgi-bin
-RUN /busybox.static chown -R nobody:nobody app
-RUN /busybox.static rm busybox.static
+COPY --from=base /bin/busybox.static /app/busybox
+RUN [ "/app/busybox", "mkdir", "/app/cgi-bin" ]
+RUN [ "/app/busybox", "rm", "/app/busybox" ]
 
-WORKDIR /app
-EXPOSE 80
-
-CMD [ "tini", "-g", "-s", "-v", "--", "httpd", "-f", "-u", "nobody:nobody", "-vv" ]
+CMD [ "httpd", "-f", "-vv" ]
