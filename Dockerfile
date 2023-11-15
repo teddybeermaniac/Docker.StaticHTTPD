@@ -16,6 +16,8 @@ RUN wget -O "/build/busybox-${BUSYBOX_VERSION}.tar.bz2" "https://web.archive.org
 WORKDIR "/build/busybox-${BUSYBOX_VERSION}"
 COPY .config "/build/busybox-${BUSYBOX_VERSION}/.config"
 RUN make -j "$(nproc --all)" && \
+    make busybox.links && \
+    sed -i 's:/sbin/:/bin/:' busybox.links && \
     make install && \
     strip /install/bin/busybox
 
@@ -101,10 +103,9 @@ RUN "/jq-${JQ_VERSION}/configure" \
     make -j "$(nproc --all)" DESTDIR=/install install && \
     strip /install/bin/jq
 
-FROM ghcr.io/teddybeermaniac/docker.scratchbase:v0.1.0
+FROM ghcr.io/teddybeermaniac/docker.scratchbase:v0.1.1
 
 COPY --from=busybox /install/bin /bin
-COPY --from=busybox /install/sbin /sbin
 COPY --from=curl /install/bin/curl /bin/curl
 COPY --from=jq /install/bin/jq /bin/jq
 
