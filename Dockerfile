@@ -109,8 +109,8 @@ COPY --from=busybox /install/bin /bin
 COPY --from=curl /install/bin/curl /bin/curl
 COPY --from=jq /install/bin/jq /bin/jq
 
-COPY --from=base /bin/busybox.static /app/busybox
-RUN [ "/app/busybox", "mkdir", "/app/cgi-bin" ]
-RUN [ "/app/busybox", "rm", "/app/busybox" ]
+COPY --from=base /bin/busybox.static /busybox
+RUN [ "/busybox", "mkdir", "/app/cgi-bin" ]
+RUN [ "/busybox", "rm", "/busybox" ]
 
 CMD [ "httpd", "-f", "-vv" ]
