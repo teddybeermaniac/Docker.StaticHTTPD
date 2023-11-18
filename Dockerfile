@@ -103,14 +103,14 @@ RUN "/jq-${JQ_VERSION}/configure" \
     make -j "$(nproc --all)" DESTDIR=/install install && \
     strip /install/bin/jq
 
-FROM ghcr.io/teddybeermaniac/docker.scratchbase:v0.1.1
+FROM ghcr.io/teddybeermaniac/docker.scratchbase:v0.1.2
 
 COPY --from=busybox /install/bin /bin
 COPY --from=curl /install/bin/curl /bin/curl
 COPY --from=jq /install/bin/jq /bin/jq
 
-COPY --from=base /bin/busybox.static /app/busybox
-RUN [ "/app/busybox", "mkdir", "/app/cgi-bin" ]
-RUN [ "/app/busybox", "rm", "/app/busybox" ]
+RUN --mount=from=base,source=/bin/busybox.static,target=/bin/busybox \
+    --mount=from=base,source=/bin/busybox.static,target=/bin/sh \
+    busybox mkdir -p /app/cgi-bin
 
 CMD [ "httpd", "-f", "-vv" ]
