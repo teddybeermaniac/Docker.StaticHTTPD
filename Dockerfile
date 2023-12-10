@@ -1,4 +1,4 @@
-FROM alpine:3.18.4 AS base
+FROM alpine:3.19.0 AS base
 
 RUN apk add --no-cache \
     build-base \
@@ -9,8 +9,7 @@ FROM base AS busybox
 ARG BUSYBOX_VERSION=1.36.1
 
 WORKDIR /build
-#RUN wget -O "/build/busybox-${BUSYBOX_VERSION}.tar.bz2" "https://busybox.net/downloads/busybox-${BUSYBOX_VERSION}.tar.bz2" && \
-RUN wget -O "/build/busybox-${BUSYBOX_VERSION}.tar.bz2" "https://web.archive.org/web/9999if_/https://busybox.net/downloads/busybox-${BUSYBOX_VERSION}.tar.bz2" && \
+RUN wget -O "/build/busybox-${BUSYBOX_VERSION}.tar.bz2" "https://busybox.net/downloads/busybox-${BUSYBOX_VERSION}.tar.bz2" && \
     tar -xf "/build/busybox-${BUSYBOX_VERSION}.tar.bz2"
 
 WORKDIR "/build/busybox-${BUSYBOX_VERSION}"
@@ -37,7 +36,7 @@ RUN apk add --no-cache \
     zstd-dev \
     zstd-static
 
-ARG CURL_VERSION=8.4.0
+ARG CURL_VERSION=8.5.0
 
 WORKDIR /
 RUN wget -O "/curl-${CURL_VERSION}.tar.gz" "https://github.com/curl/curl/releases/download/curl-${CURL_VERSION//./_}/curl-${CURL_VERSION}.tar.gz" && \
@@ -103,7 +102,7 @@ RUN "/jq-${JQ_VERSION}/configure" \
     make -j "$(nproc --all)" DESTDIR=/install install && \
     strip /install/bin/jq
 
-FROM ghcr.io/teddybeermaniac/docker.scratchbase:v0.1.2
+FROM ghcr.io/teddybeermaniac/docker.scratchbase:v0.1.3
 
 COPY --from=busybox /install/bin /bin
 COPY --from=curl /install/bin/curl /bin/curl
