@@ -84,7 +84,7 @@ FROM base AS jq
 RUN apk add --no-cache \
     oniguruma-dev
 
-ARG JQ_VERSION=1.7
+ARG JQ_VERSION=1.7.1
 
 WORKDIR /
 RUN wget -O "/jq-${JQ_VERSION}.tar.gz" "https://github.com/jqlang/jq/releases/download/jq-${JQ_VERSION}/jq-${JQ_VERSION}.tar.gz" && \
