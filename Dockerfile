@@ -20,7 +20,7 @@ RUN make install
 
 FROM base as jq
 
-ARG JQ_VERSION=1.7
+ARG JQ_VERSION=1.7.1
 
 WORKDIR /build
 RUN wget "https://github.com/jqlang/jq/releases/download/jq-${JQ_VERSION}/jq-${JQ_VERSION}.tar.gz"
