@@ -102,7 +102,7 @@ RUN "/jq-${JQ_VERSION}/configure" \
     make -j "$(nproc --all)" DESTDIR=/install install && \
     strip /install/bin/jq
 
-FROM ghcr.io/teddybeermaniac/docker.scratchbase:v0.1.3
+FROM ghcr.io/teddybeermaniac/docker.scratchbase:v0.1.4
 
 COPY --from=busybox /install/bin /bin
 COPY --from=curl /install/bin/curl /bin/curl
