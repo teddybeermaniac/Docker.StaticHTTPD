@@ -84,7 +84,7 @@ FROM base AS jq
 RUN apk add --no-cache \
     oniguruma-dev
 
-ARG JQ_VERSION=1.7
+ARG JQ_VERSION=1.7.1
 
 WORKDIR /
 RUN wget -O "/jq-${JQ_VERSION}.tar.gz" "https://github.com/jqlang/jq/releases/download/jq-${JQ_VERSION}/jq-${JQ_VERSION}.tar.gz" && \
@@ -102,7 +102,7 @@ RUN "/jq-${JQ_VERSION}/configure" \
     make -j "$(nproc --all)" DESTDIR=/install install && \
     strip /install/bin/jq
 
-FROM ghcr.io/teddybeermaniac/docker.scratchbase:v0.1.3
+FROM ghcr.io/teddybeermaniac/docker.scratchbase:v0.1.4
 
 COPY --from=busybox /install/bin /bin
 COPY --from=curl /install/bin/curl /bin/curl
